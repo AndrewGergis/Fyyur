@@ -38,6 +38,8 @@ def create_app(test_config=None):
     @app.route('/categories')
     def get_categories():
         categories = Category.query.all()
+        if len(categories) == 0:
+            abort(404)
         formatted_categories = [c.format() for c in categories]
         categories_dic = {}
         for category in formatted_categories:
@@ -251,12 +253,14 @@ def create_app(test_config=None):
 
         print(valid_questions)
 
-        if len(valid_questions) == 0:
-            abort(404)
+        if len(valid_questions) > 0:
+            question = random.choice(valid_questions)
+        else:
+            question = None
 
         return jsonify({
             'success': True,
-            'question': random.choice(valid_questions)
+            'question': question
         })
 
     '''
