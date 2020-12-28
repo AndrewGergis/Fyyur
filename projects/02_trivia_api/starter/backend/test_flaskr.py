@@ -45,6 +45,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
         self.assertTrue(data['total_categories'] > 0)
 
+    def test_get_categories_404_if_no_categories(self):
+        Category.query.delete()
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
     def test_should_get_questions_with_page(self):
         res = self.client().get('/questions?page=1')
         data = json.loads(res.data)
@@ -166,7 +175,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertNotEqual(data['question']['id'], 1)
         self.assertEqual(data['question']['category'], 1)
 
-    def test_get_quizzes_404(self):
+    def test_get_quizzes_None_question_if_no_more_questions_in_the_requested_category(self):
         request_body = {
             'previous_questions': [1],
             'quiz_category': {
@@ -177,9 +186,9 @@ class TriviaTestCase(unittest.TestCase):
         res = self.client().post('/quizzes', json=request_body)
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertIsNone(data['question'])
 
 
 # Make the tests conveniently executable
